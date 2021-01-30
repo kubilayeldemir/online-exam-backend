@@ -3,5 +3,7 @@
         "node_modules{,/**}",
         ".vscode{,/**}",
         ".env"
-    ]
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/16506a71-0e02-46f6-9287-c26a6b7ba671/resourceGroups/rest-api-deneme/providers/Microsoft.Web/sites/node-backend-deneme",
+    "appService.deploySubpath": "."
 }

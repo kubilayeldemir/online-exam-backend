@@ -4,6 +4,8 @@ const app = express();
 app.use(express.json());
 const dotenv = require('dotenv');
 dotenv.config();
+const db = require('./queries')
+
 
 //SSH TEST 2
 
@@ -26,6 +28,8 @@ app.get('/', (req, res) => {
     res.send(api);
     console.log(api)
 })
+
+app.get('/api/users',db.getUsers)
 
 app.get('/api/courses', (req, res) => {
     res.send(courses);
