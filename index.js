@@ -2,6 +2,9 @@ const express = require('express');
 const Joi = require('joi');
 const app = express();
 app.use(express.json());
+const dotenv = require('dotenv');
+dotenv.config();
+
 //SSH TEST 2
 
 const courses = [{
@@ -18,8 +21,10 @@ const courses = [{
     }
 ];
 
-app.get('/', (req, res) => {
-    res.send('Hello world');
+app.get('/', (req, res) => {    
+    var api = process.env.DATABASE_URL
+    res.send(api);
+    console.log(api)
 })
 
 app.get('/api/courses', (req, res) => {
