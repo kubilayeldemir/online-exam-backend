@@ -29,7 +29,19 @@ app.get('/', (req, res) => {
     console.log(api)
 })
 
+app.post('/api/login', db.Login)
+
+app.get('/api/dev', db.getExams)
+
 app.get('/api/users',db.getUsers)
+
+app.post('/api/createexam', db.createExam)
+
+app.post('/api/addquestion', db.addQuestion)
+
+app.post('/api/addquestions', db.addQuestions)
+
+//--------------------------------------------
 
 app.get('/api/courses', (req, res) => {
     res.send(courses);
