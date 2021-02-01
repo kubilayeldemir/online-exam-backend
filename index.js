@@ -7,22 +7,6 @@ dotenv.config();
 const db = require('./queries')
 
 
-//SSH TEST 2
-
-const courses = [{
-        id: 1,
-        name: "course1"
-    },
-    {
-        id: 2,
-        name: "course2"
-    },
-    {
-        id: 3,
-        name: "course3"
-    }
-];
-
 app.get('/', (req, res) => {    
     var api = process.env.DATABASE_URL
     res.send(api);
@@ -31,18 +15,27 @@ app.get('/', (req, res) => {
 
 app.post('/api/login', db.Login)
 
-app.get('/api/dev', db.getExams)
+app.get('/api/users', db.getUsers)
 
-app.get('/api/users',db.getUsers)
+app.get('/api/users/:id', db.getUser)
 
-app.post('/api/createexam', db.createExam)
+app.get('/api/exams', db.getExams)
 
-app.post('/api/addquestion', db.addQuestion)
+app.get('/api/exams/:examId', db.getExam)
 
-app.post('/api/addquestions', db.addQuestions)
+app.post('/api/exams', db.createExam)
+
+//app.post('/api/exams/:id/questions', db.addQuestion)
+
+app.post('/api/exams/:examId/questions', db.addQuestions)
+
+//app.post('/api/addquestions', db.addQuestions)
+
+//app.get('/api/addquestions', db.addQuestions)
+
 
 //--------------------------------------------
-
+/*
 app.get('/api/courses', (req, res) => {
     res.send(courses);
 })
@@ -101,7 +94,7 @@ function validaCourse(course){
         name: Joi.string().min(3).required()
     };
     return  Joi.validate(course, schema);
-}
+}*/
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}`));

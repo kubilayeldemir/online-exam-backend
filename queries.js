@@ -18,6 +18,17 @@ const getUsers = (request, response) => {
     })
 }
 
+const getUser = (req, res) => {
+    let sql = `SELECT * FROM users WHERE user_id=${req.params.id}`
+    pool.query(sql, (error, results) => {
+        if (error) {
+            console.log(error);
+            throw error
+        }
+        res.status(200).json(results.rows)
+    })
+}
+
 const Login = (req, res) => {
     var query = `
     select *
@@ -49,6 +60,18 @@ const getExams = (request, response) => {
             throw error
         }
         response.status(200).json(results.rows)
+    })
+}
+
+const getExam = (req, res) => {
+    let sql = `SELECT * FROM exam where exam_id=${req.params.examId}`
+    console.log(sql);
+    pool.query(sql, (error, results) => {
+        if (error) {
+            console.log(error);
+            throw error
+        }
+        res.status(200).json(results.rows)
     })
 }
 
@@ -84,7 +107,7 @@ const addQuestions = (req, res) => {
     sql += ' VALUES '
     let idx=0;
     req.body.forEach(((question) => {
-        sql += `('${question.exam_id}', '${question.teacher_id}', '${question.question_text}', '${question.correct_option}', '${question.option_1}',
+        sql += `('${req.params.examId}', '${question.teacher_id}', '${question.question_text}', '${question.correct_option}', '${question.option_1}',
         '${question.option_2}', '${question.option_3}', '${question.option_4}', '${question.option_5}'),`
         
             }));
@@ -106,10 +129,12 @@ const addQuestions = (req, res) => {
 
 module.exports = {
     getUsers,
+    getUser,
     Login,
     getExams,
     createExam,
     addQuestion,
-    addQuestions
+    addQuestions,
+    getExam
     
 }
