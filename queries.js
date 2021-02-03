@@ -54,11 +54,16 @@ const Login = (req, res) => {
 }
 
 const getExams = (request, response) => {
-    pool.query('SELECT * FROM exam', (error, results) => {
+    let sql = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
+    FROM users 
+    INNER JOIN exam ON user_id=teacher_id
+    WHERE usertype=1`;
+    pool.query(sql, (error, results) => {
         if (error) {
             console.log(error);
             throw error
         }
+        //results.rows.forEach(e=>e.password="");
         response.status(200).json(results.rows)
     })
 }

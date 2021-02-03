@@ -6,6 +6,16 @@ const dotenv = require('dotenv');
 dotenv.config();
 const db = require('./queries')
 
+var cors = require('cors');
+/*
+var corsOptions = {
+    origin: 'http://example.com',
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+*/
+
+app.use(cors());
+
 
 app.get('/', (req, res) => {    
     var api = process.env.DATABASE_URL
