@@ -1,3 +1,4 @@
+var crypto = require("crypto");
 const Pool = require('pg').Pool
 const pool = new Pool({
     user: process.env.USER,
@@ -7,6 +8,16 @@ const pool = new Pool({
     port: 5432,
     ssl: process.env.host==='localhost' ? false : true
 })
+
+process.on('uncaughtException', function (error) {
+    let sql = `INSERT INTO ERROR(message, stack, date) VALUES('${error.message}','${error.stack}', current_timestamp);`
+    pool.query(sql, (error, results) => {
+        if (error) {
+            console.log(error);
+        }
+    })
+    console.log(error.stack+" ____ "+error.message);
+});
 
 const getUsers = (request, response) => {
     pool.query('SELECT * FROM users', (error, results) => {
@@ -81,9 +92,17 @@ const getExam = (req, res) => {
 }
 
 const createExam = (req, res) => {
+    var url = crypto.randomBytes(9).toString('hex');
+    pool.query(`select * from exam where URL=${url}`, (error, results) => {
+        while(results){
+            url = crypto.randomBytes(9).toString('hex');
+        }
+    })
+
+
     pool.query(`
     INSERT INTO exam(teacher_id, name, lesson, startdate, enddate,url)
-    VALUES (${req.body.teacher_id}, '${req.body.name}', '${req.body.lesson}', '${req.body.startdate}', '${req.body.enddate}','${req.body.url}') 
+    VALUES (${req.body.teacher_id}, '${req.body.name}', '${req.body.lesson}', '${req.body.startdate}', '${req.body.enddate}','${url}') 
     RETURNING*;`, (error, results) => {
         if (error) {
             console.log(error);
