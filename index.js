@@ -35,13 +35,13 @@ app.get('/api/exams/:examId', db.getExam)
 
 app.post('/api/exams', db.createExam)
 
-//app.post('/api/exams/:id/questions', db.addQuestion)
-
 app.post('/api/exams/:examId/questions', db.addQuestions)
 
 app.get('/api/exams/:examId/questions', db.getQuestions)
 
 app.post('/api/exams/:examId/answers',db.addAnswer)
+
+app.get('/api/exams/url/:url', db.getExamURL)
 
 
 //app.post('/api/addquestions', db.addQuestions)

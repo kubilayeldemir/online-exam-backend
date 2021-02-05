@@ -91,6 +91,18 @@ const getExam = (req, res) => {
     })
 }
 
+const getExamURL = (req, res) => {
+    let sql = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url  FROM users INNER JOIN exam ON user_id=teacher_id where URL='${req.params.url}';`
+    console.log(sql);
+    pool.query(sql, (error, results) => {
+        if (error) {
+            console.log(error);
+            throw error
+        }
+        res.status(200).json(results.rows)
+    })
+}
+
 const createExam = (req, res) => {
     var url = crypto.randomBytes(9).toString('hex');
     pool.query(`select * from exam where URL=${url}`, (error, results) => {
@@ -197,6 +209,7 @@ module.exports = {
     addQuestion,
     addQuestions,
     getExam,
+    getExamURL,
     getQuestions,
     addAnswer
     
