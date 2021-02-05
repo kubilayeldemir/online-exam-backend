@@ -39,6 +39,11 @@ app.post('/api/exams', db.createExam)
 
 app.post('/api/exams/:examId/questions', db.addQuestions)
 
+app.get('/api/exams/:examId/questions', db.getQuestions)
+
+app.post('/api/exams/:examId/answers',db.addAnswer)
+
+
 //app.post('/api/addquestions', db.addQuestions)
 
 //app.get('/api/addquestions', db.addQuestions)

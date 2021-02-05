@@ -68,7 +68,7 @@ const getExams = (request, response) => {
     let sql = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
-    WHERE usertype=1`;
+    WHERE usertype=0`;
     pool.query(sql, (error, results) => {
         if (error) {
             console.log(error);
@@ -125,17 +125,30 @@ const addQuestion = (req, res) => {
     })
 }
 
+const getQuestions = (req, res) => {
+    pool.query(`SELECT * FROM QUESTION WHERE exam_id=${req.params.examId}
+    `, (error, results) => {
+        if (error) {
+            console.log(error);
+            res.status(400).json(error)
+            throw error
+        }
+        results.rows.forEach(q => delete q.correct_option);
+        res.status(200).json(results.rows)
+    })
+}
+
+
 const addQuestions = (req, res) => {    
     let sql = ''
     sql += 'INSERT INTO question(exam_id, teacher_id, question_text, correct_option, option_1, option_2, option_3, option_4, option_5)';
     sql += ' VALUES '
-    let idx=0;
     req.body.forEach(((question) => {
         sql += `('${req.params.examId}', '${question.teacher_id}', '${question.question_text}', '${question.correct_option}', '${question.option_1}',
         '${question.option_2}', '${question.option_3}', '${question.option_4}', '${question.option_5}'),`
         
             }));
-    sql=sql.substring(0, sql.length - 1);
+    sql = sql.substring(0, sql.length - 1); //Deletes the last comma
     sql+= ' RETURNING*'
     
     console.log(sql);
@@ -145,9 +158,33 @@ const addQuestions = (req, res) => {
             res.status(400).json(error)
             throw error
         }
-        res.status(200).json(results.rows[0])
+        res.status(200).json(results.rows)
     })
 }
+
+const addAnswer = (req, res) => {
+    let sql = ''
+    sql += 'INSERT INTO answer(exam_id,student_id,question_id ,selected_option)';
+    sql += ' VALUES '
+    req.body.forEach(((answer) => {
+        sql += `('${req.params.examId}', '${answer.student_id}', '${answer.question_id}', '${answer.selected_option}'),`
+
+    }));
+    sql = sql.substring(0, sql.length - 1);//Deletes the last comma
+    sql += ' RETURNING*'
+
+    console.log(sql);
+    pool.query(sql, (error, results) => {
+        if (error) {
+            console.log(error);
+            res.status(400).json(error)
+            throw error
+        }
+        res.status(200).json(results.rows)
+    })
+}
+
+
 
 
 
@@ -159,6 +196,8 @@ module.exports = {
     createExam,
     addQuestion,
     addQuestions,
-    getExam
+    getExam,
+    getQuestions,
+    addAnswer
     
 }
