@@ -65,17 +65,44 @@ const Login = (req, res) => {
 }
 
 const getExams = (request, response) => {
-    let sql = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
+    let sqlActiveExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
-    WHERE usertype=0`;
-    pool.query(sql, (error, results) => {
+    WHERE usertype = 0 AND startdate < current_timestamp AND enddate > current_timestamp`;
+    let sqlOldExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
+    FROM users 
+    INNER JOIN exam ON user_id=teacher_id
+    WHERE usertype = 0 AND startdate < current_timestamp AND enddate < current_timestamp`;
+    let sqlFutureExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
+    FROM users 
+    INNER JOIN exam ON user_id=teacher_id
+    WHERE usertype = 0 AND startdate > current_timestamp AND enddate > current_timestamp`;
+    let exams={
+        active_exams:[],
+        old_exams: [],
+        future_exams: []
+    };
+    pool.query(sqlActiveExams, (error, results) => {
         if (error) {
             console.log(error);
             throw error
         }
-        //results.rows.forEach(e=>e.password="");
-        response.status(200).json(results.rows)
+        exams.active_exams = results.rows
+    }),
+    pool.query(sqlOldExams, (error, results) => {
+        if (error) {
+            console.log(error);
+            throw error
+        }
+        exams.old_exams = results.rows
+    }),
+    pool.query(sqlFutureExams, (error, results) => {
+        if (error) {
+            console.log(error);
+            throw error
+        }
+        exams.future_exams = results.rows
+        response.status(200).json(exams)
     })
 }
 
