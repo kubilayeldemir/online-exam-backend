@@ -41,14 +41,10 @@ const getUser = (req, res) => {
 }
 
 const Login = (req, res) => {
-    var query = `
-    select *
-    from users
-    where mail = '${req.body.mail}'
-    AND password = '${req.body.password}';
-    `
+    var query = "select * from users where mail = $1 AND password=$2;";
+    var val =[req.body.mail,req.body.password]
     console.log(query)
-    pool.query(query, (error, results) => {
+    pool.query(query,val, (error, results) => {
         if (error) {
             console.log(error);
             throw error
@@ -69,11 +65,11 @@ const getExams = (request, response) => {
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
     WHERE usertype = 0 AND startdate < current_timestamp AND enddate > current_timestamp`;
-    let sqlOldExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
+    let sqlOldExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
     WHERE usertype = 0 AND startdate < current_timestamp AND enddate < current_timestamp`;
-    let sqlFutureExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
+    let sqlFutureExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
     WHERE usertype = 0 AND startdate > current_timestamp AND enddate > current_timestamp`;
