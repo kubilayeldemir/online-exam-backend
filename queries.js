@@ -6,7 +6,7 @@ const pool = new Pool({
     database: 'postgres',
     password: process.env.PASSWORD,
     port: 5432,
-    ssl: process.env.host==='localhost' ? false : true
+    ssl: process.env.host === 'localhost' ? false : true
 })
 
 process.on('uncaughtException', function (error) {
@@ -16,7 +16,7 @@ process.on('uncaughtException', function (error) {
             console.log(error);
         }
     })
-    console.log(error.stack+" ____ "+error.message);
+    console.log(error.stack + " ____ " + error.message);
 });
 
 const getUsers = (request, response) => {
@@ -42,22 +42,43 @@ const getUser = (req, res) => {
 
 const Login = (req, res) => {
     var query = "select * from users where mail = $1 AND password=$2;";
-    var val =[req.body.mail,req.body.password]
+    var val = [req.body.mail, req.body.password]
     console.log(query)
-    pool.query(query,val, (error, results) => {
+    pool.query(query, val, (error, results) => {
         if (error) {
             console.log(error);
             throw error
         }
-        if (results.rowCount === 1 && req.body.password===results.rows[0].password ) {
+        if (results.rowCount === 1 && req.body.password === results.rows[0].password) {
             res.status(200).json({
-                    "User": results.rows[0]
-                ,                
-                    "AuthKey":123123123
-                }
-                )
+                "User": results.rows[0],
+                "AuthKey": 123123123
+            })
         }
     })
+}
+
+const checkAuth = async (mail, pw) => {
+    return new Promise((resolve, reject) => {
+        if (mail === undefined || pw === undefined) {
+            console.log("Mail and pw are undefined");
+            return resolve(false);
+        }
+        var query = "select * from users where mail = $1 AND password=$2;";
+
+        var val = [mail, pw]
+        pool.query(query, val, (error, results) => {
+            if (error) {
+                console.log(error);
+                res.status(401).json(enc.toString(CryptoJS.enc.Utf8));
+                return reject(false);
+            }
+            if (results.rowCount === 1) {
+                return resolve(true);;
+            }
+            return resolve(false);
+        })
+    });
 }
 
 const getExams = (request, response) => {
@@ -73,33 +94,33 @@ const getExams = (request, response) => {
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
     WHERE usertype = 0 AND startdate > current_timestamp AND enddate > current_timestamp`;
-    let exams={
-        active_exams:[],
+    let exams = {
+        active_exams: [],
         old_exams: [],
         future_exams: []
     };
     pool.query(sqlActiveExams, (error, results) => {
-        if (error) {
-            console.log(error);
-            throw error
-        }
-        exams.active_exams = results.rows
-    }),
-    pool.query(sqlOldExams, (error, results) => {
-        if (error) {
-            console.log(error);
-            throw error
-        }
-        exams.old_exams = results.rows
-    }),
-    pool.query(sqlFutureExams, (error, results) => {
-        if (error) {
-            console.log(error);
-            throw error
-        }
-        exams.future_exams = results.rows
-        response.status(200).json(exams)
-    })
+            if (error) {
+                console.log(error);
+                throw error
+            }
+            exams.active_exams = results.rows
+        }),
+        pool.query(sqlOldExams, (error, results) => {
+            if (error) {
+                console.log(error);
+                throw error
+            }
+            exams.old_exams = results.rows
+        }),
+        pool.query(sqlFutureExams, (error, results) => {
+            if (error) {
+                console.log(error);
+                throw error
+            }
+            exams.future_exams = results.rows
+            response.status(200).json(exams)
+        })
 }
 
 const getExam = (req, res) => {
@@ -129,7 +150,7 @@ const getExamURL = (req, res) => {
 const createExam = (req, res) => {
     var url = crypto.randomBytes(9).toString('hex');
     pool.query(`select * from exam where URL=${url}`, (error, results) => {
-        while(results){
+        while (results) {
             url = crypto.randomBytes(9).toString('hex');
         }
     })
@@ -174,18 +195,18 @@ const getQuestions = (req, res) => {
 }
 
 
-const addQuestions = (req, res) => {    
+const addQuestions = (req, res) => {
     let sql = ''
     sql += 'INSERT INTO question(exam_id, teacher_id, question_text, correct_option, option_1, option_2, option_3, option_4, option_5)';
     sql += ' VALUES '
     req.body.forEach(((question) => {
         sql += `('${req.params.examId}', '${question.teacher_id}', '${question.question_text}', '${question.correct_option}', '${question.option_1}',
         '${question.option_2}', '${question.option_3}', '${question.option_4}', '${question.option_5}'),`
-        
-            }));
+
+    }));
     sql = sql.substring(0, sql.length - 1); //Deletes the last comma
-    sql+= ' RETURNING*'
-    
+    sql += ' RETURNING*'
+
     console.log(sql);
     pool.query(sql, (error, results) => {
         if (error) {
@@ -205,7 +226,7 @@ const addAnswer = (req, res) => {
         sql += `('${req.params.examId}', '${answer.student_id}', '${answer.question_id}', '${answer.selected_option}'),`
 
     }));
-    sql = sql.substring(0, sql.length - 1);//Deletes the last comma
+    sql = sql.substring(0, sql.length - 1); //Deletes the last comma
     sql += ' RETURNING*'
 
     console.log(sql);
@@ -227,6 +248,7 @@ module.exports = {
     getUsers,
     getUser,
     Login,
+    checkAuth,
     getExams,
     createExam,
     addQuestion,
@@ -235,5 +257,5 @@ module.exports = {
     getExamURL,
     getQuestions,
     addAnswer
-    
+
 }

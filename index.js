@@ -4,23 +4,42 @@ const app = express();
 app.use(express.json());
 const dotenv = require('dotenv');
 dotenv.config();
+var CryptoJS = require("crypto-js");
 const db = require('./queries')
 
 var cors = require('cors');
-/*
-var corsOptions = {
-    origin: 'http://example.com',
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
-*/
 
 app.use(cors());
 
+async function basicAuthentication(req, res, next) {
+    if (req.path == '/api/login') return next();
 
-app.get('/', (req, res) => {    
+    if (req.get("Auth") === undefined) {
+        res.status(401).json("No Auth Data");
+        return;
+    }
+    enc = CryptoJS.AES.decrypt(req.get("Auth"), "sifrecisifrecii")
+    try {
+        var liste = enc.toString(CryptoJS.enc.Utf8).split(":")
+    } catch (error) {
+        res.status(401).json("Wrong Auth Data");
+        return;
+    }
+    db.checkAuth(liste[0], liste[1]).then(isAuth => {
+        if (isAuth) {
+            next();
+        } else {
+            res.status(401).json("You are not authorized");
+        }
+    })
+    res.status(500);
+}
+
+app.use(basicAuthentication);
+
+app.get('/', (req, res) => {
     var api = process.env.DATABASE_URL
     res.send(api);
-    console.log(api)
 })
 
 app.post('/api/login', db.Login)
@@ -39,77 +58,10 @@ app.post('/api/exams/:examId/questions', db.addQuestions)
 
 app.get('/api/exams/:examId/questions', db.getQuestions)
 
-app.post('/api/exams/:examId/answers',db.addAnswer)
+app.post('/api/exams/:examId/answers', db.addAnswer)
 
 app.get('/api/exams/url/:url', db.getExamURL)
 
-
-//app.post('/api/addquestions', db.addQuestions)
-
-//app.get('/api/addquestions', db.addQuestions)
-
-
-//--------------------------------------------
-/*
-app.get('/api/courses', (req, res) => {
-    res.send(courses);
-})
-
-app.get('/api/courses/:id', (req, res) => {
-    const course = courses.find(c => c.id === parseInt(req.params.id))
-    if(!course){
-        res.status(404).send('Course bulunamadı');
-    }
-    res.send(course);
-})
-
-app.post('/api/courses',(req,res)=>{
-    const schema = {
-        name: Joi.string().min(3).required()
-    };
-    const result = Joi.validate(req.body,schema);
-    console.log(result);
-    if(result.error){
-        res.status(400).send(result.error.details[0].message);
-        return;
-    }
-    const course = {
-        id:courses.length + 1,
-        name:req.body.name,
-    };
-    courses.push(course);
-    res.send(course);
-});
-
-app.put('/api/courses/:id',(req,res)=>{
-    const course = courses.find(c => c.id === parseInt(req.params.id))
-    if (!course) {
-        res.status(404).send('Course bulunamadı');
-    }
-    const { error } = validaCourse(req.body);//result.error
-    
-    if (error) {
-        res.status(400).send(error.details[0].message);
-        return;
-    }
-    course.name=req.body.name;
-    res.send(course);
-
-});
-
-app.delete("/api/courses/:id",(req,res)=>{
-    const course = courses.find(c => c.id === parseInt(req.params.id))
-    const index = courses.indexOf(course);
-    courses.splice(index,1);
-    res.send(course);
-})
-
-function validaCourse(course){
-    const schema = {
-        name: Joi.string().min(3).required()
-    };
-    return  Joi.validate(course, schema);
-}*/
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}`));
