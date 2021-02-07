@@ -41,7 +41,7 @@ const getUser = (req, res) => {
 }
 
 const Login = (req, res) => {
-    var query = "select * from users where mail = $1 AND password=$2;";
+    var query = "select user_id,usertype,mail,name,surname,tc from users where mail = $1 AND password=$2;";
     var val = [req.body.mail, req.body.password]
     console.log(query)
     pool.query(query, val, (error, results) => {
@@ -49,11 +49,10 @@ const Login = (req, res) => {
             console.log(error);
             throw error
         }
-        if (results.rowCount === 1 && req.body.password === results.rows[0].password) {
-            res.status(200).json({
-                "User": results.rows[0],
-                "AuthKey": 123123123
-            })
+        if (results.rowCount === 1 && req.body.mail === results.rows[0].mail) {
+            res.status(200).json(results.rows[0])
+        } else {
+            res.status(401).json("Can't Find User")
         }
     })
 }
