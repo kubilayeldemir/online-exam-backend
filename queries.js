@@ -79,47 +79,73 @@ const checkAuth = async (mail, pw) => {
         })
     });
 }
+const getOldExams = async () => {
+    return new Promise((resolve, reject) => {
+        let sqlOldExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
+            FROM users 
+            INNER JOIN exam ON user_id=teacher_id
+            WHERE startdate < current_timestamp AND enddate < current_timestamp`;
 
-const getExams = (request, response) => {
-    let sqlActiveExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
-    FROM users 
-    INNER JOIN exam ON user_id=teacher_id
-    WHERE startdate < current_timestamp AND enddate > current_timestamp`;
-    let sqlOldExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
-    FROM users 
-    INNER JOIN exam ON user_id=teacher_id
-    WHERE startdate < current_timestamp AND enddate < current_timestamp`;
-    let sqlFutureExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
-    FROM users 
-    INNER JOIN exam ON user_id=teacher_id
-    WHERE startdate > current_timestamp AND enddate > current_timestamp`;
+
+        pool.query(sqlOldExams, (error, results) => {
+            if (error) {
+                console.log(error);
+                return reject(error);
+            }
+            return resolve(results.rows);
+        })
+    })
+}
+
+const getFutureExams = async () => {
+    return new Promise((resolve, reject) => {
+        let sqlFutureExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
+                FROM users 
+                INNER JOIN exam ON user_id=teacher_id
+                WHERE startdate > current_timestamp AND enddate > current_timestamp`;
+
+
+        pool.query(sqlFutureExams, (error, results) => {
+            if (error) {
+                console.log(error);
+                return reject(error);
+            }
+            return resolve(results.rows);
+        })
+    })
+}
+
+const getActiveExams = async () => {
+    return new Promise((resolve, reject) => {
+        let sqlActiveExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
+            FROM users 
+            INNER JOIN exam ON user_id=teacher_id
+            WHERE startdate < current_timestamp AND enddate > current_timestamp`;
+
+
+        pool.query(sqlActiveExams, (error, results) => {
+            if (error) {
+                console.log(error);
+                return reject(error);
+            }
+            return resolve(results.rows);
+        })
+    })
+}
+
+const getExams = async (request, response) => {
     let exams = {
         active_exams: [],
         old_exams: [],
         future_exams: []
     };
-    pool.query(sqlActiveExams, (error, results) => {
-            if (error) {
-                console.log(error);
-                throw error
-            }
-            exams.active_exams = results.rows
-        }),
-        pool.query(sqlOldExams, (error, results) => {
-            if (error) {
-                console.log(error);
-                throw error
-            }
-            exams.old_exams = results.rows
-        }),
-        pool.query(sqlFutureExams, (error, results) => {
-            if (error) {
-                console.log(error);
-                throw error
-            }
-            exams.future_exams = results.rows
-            response.status(200).json(exams)
-        })
+    exams.old_exams = await getOldExams();
+
+    exams.active_exams = await getActiveExams();
+
+    exams.future_exams = await getFutureExams();
+
+    response.status(200).json(exams)
 }
 
 const getExam = (req, res) => {
