@@ -84,15 +84,15 @@ const getExams = (request, response) => {
     let sqlActiveExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam_id,exam.name,lesson,startDate,enddate,url 
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
-    WHERE usertype = 0 AND startdate < current_timestamp AND enddate > current_timestamp`;
+    WHERE startdate < current_timestamp AND enddate > current_timestamp`;
     let sqlOldExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
-    WHERE usertype = 0 AND startdate < current_timestamp AND enddate < current_timestamp`;
+    WHERE startdate < current_timestamp AND enddate < current_timestamp`;
     let sqlFutureExams = `SELECT users.name as teacher_name,surname as teacher_surname,exam.name,lesson,startDate,enddate,url 
     FROM users 
     INNER JOIN exam ON user_id=teacher_id
-    WHERE usertype = 0 AND startdate > current_timestamp AND enddate > current_timestamp`;
+    WHERE startdate > current_timestamp AND enddate > current_timestamp`;
     let exams = {
         active_exams: [],
         old_exams: [],
@@ -149,7 +149,7 @@ const getExamURL = (req, res) => {
 const createExam = (req, res) => {
     var url = crypto.randomBytes(9).toString('hex');
     pool.query(`select * from exam where URL=${url}`, (error, results) => {
-        while (results) {
+        if (results) {
             url = crypto.randomBytes(9).toString('hex');
         }
     })
