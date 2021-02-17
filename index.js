@@ -44,9 +44,9 @@ app.get('/', (req, res) => {
 
 app.post('/api/login', db.Login)
 
-app.get('/api/users', db.getUsers)
+//app.get('/api/users', db.getUsers)
 
-app.get('/api/users/:id', db.getUser)
+//app.get('/api/users/:id', db.getUser)
 
 app.get('/api/exams', db.getExams)
 
