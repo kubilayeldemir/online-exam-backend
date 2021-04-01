@@ -3,10 +3,10 @@ const Pool = require('pg').Pool
 const pool = new Pool({
     user: process.env.USER,
     host: process.env.HOST,
-    database: 'postgres',
+    database: process.env.DATABASE,
     password: process.env.PASSWORD,
     port: 5432,
-    ssl: process.env.host === 'localhost' ? false : true
+    ssl: false
 })
 
 process.on('uncaughtException', function (error) {
